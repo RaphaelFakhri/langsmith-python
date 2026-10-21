@@ -44,6 +44,11 @@ class Agent(BaseModel):
 
     source_type: Literal["LSD", "MDA", "EXTERNAL", "FLEET"]
 
+    owner: Optional[str] = None
+    """Owner is the owner's full name, falling back to email when available."""
+
+    owner_id: Optional[str] = None
+
     tag_key_id: Optional[str] = None
 
     tag_value_id: Optional[str] = None
