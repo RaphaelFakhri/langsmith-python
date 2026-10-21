@@ -48,7 +48,7 @@ class AgentsResource(SyncAPIResource):
         self,
         *,
         id: str,
-        source_type: Literal["LSD", "MDA", "EXTERNAL", "FLEET"],
+        source_type: Literal["LSD", "MDA", "EXTERNAL", "FLEET"] = "EXTERNAL",
         agent_type: Literal["CUSTOM", "CODING"] | Omit = omit,
         name: str | Omit = omit,
         production_only: bool | Omit = omit,
@@ -71,7 +71,7 @@ class AgentsResource(SyncAPIResource):
           id: Unique agent identifier: 1-63 lowercase letters, digits, or hyphens, starting
               with a letter and ending with a letter or digit.
 
-          source_type: Agent runtime kind. Use EXTERNAL for an application hosted outside LangSmith.
+          source_type: Agent runtime kind. Defaults to EXTERNAL for an application hosted outside LangSmith.
 
           agent_type: AgentType defaults to CUSTOM when omitted.
 
@@ -344,7 +344,7 @@ class AsyncAgentsResource(AsyncAPIResource):
         self,
         *,
         id: str,
-        source_type: Literal["LSD", "MDA", "EXTERNAL", "FLEET"],
+        source_type: Literal["LSD", "MDA", "EXTERNAL", "FLEET"] = "EXTERNAL",
         agent_type: Literal["CUSTOM", "CODING"] | Omit = omit,
         name: str | Omit = omit,
         production_only: bool | Omit = omit,
@@ -367,7 +367,7 @@ class AsyncAgentsResource(AsyncAPIResource):
           id: Unique agent identifier: 1-63 lowercase letters, digits, or hyphens, starting
               with a letter and ending with a letter or digit.
 
-          source_type: Agent runtime kind. Use EXTERNAL for an application hosted outside LangSmith.
+          source_type: Agent runtime kind. Defaults to EXTERNAL for an application hosted outside LangSmith.
 
           agent_type: AgentType defaults to CUSTOM when omitted.
 
