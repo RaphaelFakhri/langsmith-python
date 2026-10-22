@@ -978,6 +978,7 @@ class Client:
         "compressed_traces",
         "_data_available_event",
         "_futures",
+        "_futures_lock",
         "_run_ops_buffer",
         "_run_ops_buffer_lock",
         "otel_exporter",
@@ -1313,7 +1314,8 @@ class Client:
         atexit.register(self._atexit_handler)
         self.compressed_traces: Optional[CompressedTraces] = None
         self._data_available_event: Optional[threading.Event] = None
-        self._futures: Optional[weakref.WeakSet[cf.Future]] = None
+        self._futures: weakref.WeakSet[cf.Future] = weakref.WeakSet()
+        self._futures_lock = threading.Lock()
         self._run_ops_buffer: list[tuple[str, dict, dict[str, Any]]] = []
         self._run_ops_buffer_lock = threading.Lock()
         self.otel_exporter: Optional[OTELExporter] = None
@@ -2926,9 +2928,7 @@ class Client:
 
         try:
             future = LANGSMITH_CLIENT_THREAD_POOL.submit(_process_buffered_run_ops_batch, self, batch_to_process)
-            # Track the future if we have a futures set
-            if self._futures is not None:
-                self._futures.add(future)
+            self._track_future(future)
         except RuntimeError:
             # Thread pool is shut down, process synchronously as fallback
             _process_buffered_run_ops_batch(self, batch_to_process)
@@ -3926,51 +3926,33 @@ class Client:
         if self.compressed_traces is None:
             return
 
-        if self._futures is None:
-            raise ValueError("Run compression is enabled but request pool futures is not set")
-
         # Attempt to drain and send any remaining data
-        from langsmith._internal._background_thread import (
-            LANGSMITH_CLIENT_THREAD_POOL,
-            _tracing_thread_drain_compressed_buffer,
-        )
+        from langsmith._internal._background_thread import _drain_and_send_compressed
 
-        (
-            final_data_stream,
-            compressed_traces_info,
-            destinations,
-        ) = _tracing_thread_drain_compressed_buffer(self, size_limit=1, size_limit_bytes=1)
+        _drain_and_send_compressed(self, size_limit=1, size_limit_bytes=1, attempts=attempts)
+        self._wait_for_futures(timeout)
 
-        if final_data_stream is not None:
-            # We have data to send
-            future = None
-            try:
-                future = LANGSMITH_CLIENT_THREAD_POOL.submit(
-                    self._send_compressed_multipart_req,
-                    final_data_stream,
-                    compressed_traces_info,
-                    destinations=destinations,
-                    attempts=attempts,
-                )
-                self._futures.add(future)
-            except RuntimeError:
-                # In case the ThreadPoolExecutor is already shutdown
-                self._send_compressed_multipart_req(
-                    final_data_stream,
-                    compressed_traces_info,
-                    destinations=destinations,
-                    attempts=attempts,
-                )
+    def _track_future(self, future: cf.Future) -> None:
+        """Register a thread pool job so flush() waits for it."""
+        with self._futures_lock:
+            self._futures.add(future)
 
-        # If we got a future, wait for it to complete
-        if self._futures:
+    def _wait_for_futures(self, timeout: Optional[float] = None) -> None:
+        """Wait for in-flight thread pool jobs (buffered run ops, compressed sends)."""
+        # Other threads add futures concurrently; iterating the set unlocked
+        # raises "Set changed size during iteration".
+        with self._futures_lock:
             futures = list(self._futures)
+        if futures:
             done, _ = cf.wait(futures, timeout=timeout)
-            # Remove completed futures
-            self._futures.difference_update(done)
+            with self._futures_lock:
+                self._futures.difference_update(done)
 
     def flush(self, timeout: Optional[float] = None) -> None:
         """Flush the tracing queue and compressed buffer.
+
+        With ``process_buffered_run_ops`` set, this also waits for the callback
+        to finish on the buffered runs, so a slow callback uses up the timeout.
 
         Args:
             timeout: Maximum seconds to wait for pending traces to drain.
@@ -3983,6 +3965,9 @@ class Client:
             with self._run_ops_buffer_lock:
                 if self._run_ops_buffer:
                     self._flush_run_ops_buffer()
+            # The pool job is what enqueues the processed runs; wait for it
+            # before draining the queue and the compressed buffer.
+            self._wait_for_futures(max(0.0, deadline - time.monotonic()) if deadline is not None else None)
 
         if self.tracing_queue is not None:
             if deadline is None:
