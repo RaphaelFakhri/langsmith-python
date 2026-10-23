@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-from typing import Dict
+from typing import Dict, Iterable
 from typing_extensions import Literal, Required, TypedDict
 
 from ..._types import SequenceNotStr
 from ..proxy_config_param import ProxyConfigParam
 from ..sandbox_mount_config_param import SandboxMountConfigParam
 
-__all__ = ["BoxCreateParams", "AccessDelegation", "RunConfig"]
+__all__ = ["BoxCreateParams", "AccessDelegation", "RunConfig", "Volume"]
 
 
 class BoxCreateParams(TypedDict, total=False):
@@ -99,6 +99,13 @@ class BoxCreateParams(TypedDict, total=False):
 
     vcpus: int
 
+    volumes: Iterable[Volume]
+    """Volumes (beta) attaches existing volumes at mount paths inside the sandbox.
+
+    At most 4; requires sandbox volumes to be enabled for your workspace. Attaching
+    a volume requires being its creator or holding sandboxes:exec.
+    """
+
 
 class AccessDelegation(TypedDict, total=False):
     """
@@ -122,3 +129,16 @@ class RunConfig(TypedDict, total=False):
     user: str
 
     work_dir: str
+
+
+class Volume(TypedDict, total=False):
+    mount_path: Required[str]
+    """
+    MountPath is the absolute directory inside the sandbox where the volume appears.
+    """
+
+    volume: Required[str]
+    """Volume is the volume's ID or name."""
+
+    read_only: bool
+    """ReadOnly mounts the volume read-only; many sandboxes may do so at once."""

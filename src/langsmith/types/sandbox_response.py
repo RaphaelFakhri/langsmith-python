@@ -7,7 +7,7 @@ from .._models import BaseModel
 from .proxy_config import ProxyConfig
 from .sandbox_mount_config import SandboxMountConfig
 
-__all__ = ["SandboxResponse", "AccessDelegation", "RunConfig"]
+__all__ = ["SandboxResponse", "AccessDelegation", "RunConfig", "Volume"]
 
 
 class AccessDelegation(BaseModel):
@@ -30,6 +30,16 @@ class RunConfig(BaseModel):
     user: Optional[str] = None
 
     work_dir: Optional[str] = None
+
+
+class Volume(BaseModel):
+    mount_path: Optional[str] = None
+
+    read_only: Optional[bool] = None
+
+    volume_id: Optional[str] = None
+
+    volume_name: Optional[str] = None
 
 
 class SandboxResponse(BaseModel):
@@ -88,3 +98,9 @@ class SandboxResponse(BaseModel):
     updated_by: Optional[str] = None
 
     vcpus: Optional[int] = None
+
+    volumes: Optional[List[Volume]] = None
+    """Volumes (beta) are the volumes attached to the sandbox, in slot order.
+
+    Absent when the workspace does not have sandbox volumes enabled.
+    """

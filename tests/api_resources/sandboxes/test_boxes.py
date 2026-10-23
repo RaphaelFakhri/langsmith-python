@@ -180,6 +180,13 @@ class TestBoxes:
             snapshot_name="snapshot_name",
             tag_value_ids=["string"],
             vcpus=0,
+            volumes=[
+                {
+                    "mount_path": "mount_path",
+                    "volume": "volume",
+                    "read_only": True,
+                }
+            ],
         )
         assert_matches_type(SandboxResponse, box, path=["response"])
 
@@ -1049,6 +1056,13 @@ class TestAsyncBoxes:
             snapshot_name="snapshot_name",
             tag_value_ids=["string"],
             vcpus=0,
+            volumes=[
+                {
+                    "mount_path": "mount_path",
+                    "volume": "volume",
+                    "read_only": True,
+                }
+            ],
         )
         assert_matches_type(SandboxResponse, box, path=["response"])
 

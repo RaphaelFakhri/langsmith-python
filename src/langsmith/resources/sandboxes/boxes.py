@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Dict, List
+from typing import Dict, List, Iterable
 from typing_extensions import Literal
 
 from ..._httpx import httpx
@@ -82,6 +82,7 @@ class BoxesResource(SyncAPIResource):
         snapshot_name: str | Omit = omit,
         tag_value_ids: SequenceNotStr[str] | Omit = omit,
         vcpus: int | Omit = omit,
+        volumes: Iterable[box_create_params.Volume] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -137,6 +138,10 @@ class BoxesResource(SyncAPIResource):
           snapshot_name: SnapshotName is a synonym for Snapshot, accepted for compatibility with clients
               that predate it. Set one or the other.
 
+          volumes: Volumes (beta) attaches existing volumes at mount paths inside the sandbox. At
+              most 4; requires sandbox volumes to be enabled for your workspace. Attaching a
+              volume requires being its creator or holding sandboxes:exec.
+
           extra_headers: Send extra headers
 
           extra_query: Add additional query parameters to the request
@@ -168,6 +173,7 @@ class BoxesResource(SyncAPIResource):
                     "snapshot_name": snapshot_name,
                     "tag_value_ids": tag_value_ids,
                     "vcpus": vcpus,
+                    "volumes": volumes,
                 },
                 box_create_params.BoxCreateParams,
             ),
@@ -920,6 +926,7 @@ class AsyncBoxesResource(AsyncAPIResource):
         snapshot_name: str | Omit = omit,
         tag_value_ids: SequenceNotStr[str] | Omit = omit,
         vcpus: int | Omit = omit,
+        volumes: Iterable[box_create_params.Volume] | Omit = omit,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
         extra_headers: Headers | None = None,
@@ -975,6 +982,10 @@ class AsyncBoxesResource(AsyncAPIResource):
           snapshot_name: SnapshotName is a synonym for Snapshot, accepted for compatibility with clients
               that predate it. Set one or the other.
 
+          volumes: Volumes (beta) attaches existing volumes at mount paths inside the sandbox. At
+              most 4; requires sandbox volumes to be enabled for your workspace. Attaching a
+              volume requires being its creator or holding sandboxes:exec.
+
           extra_headers: Send extra headers
 
           extra_query: Add additional query parameters to the request
@@ -1006,6 +1017,7 @@ class AsyncBoxesResource(AsyncAPIResource):
                     "snapshot_name": snapshot_name,
                     "tag_value_ids": tag_value_ids,
                     "vcpus": vcpus,
+                    "volumes": volumes,
                 },
                 box_create_params.BoxCreateParams,
             ),
