@@ -7026,6 +7026,8 @@ class Client:
         metadata: Optional[dict] = None,
         filter: Optional[str] = None,
         include_attachments: bool = False,
+        select: Optional[Sequence[str]] = None,
+        exclude_default_fields: bool = False,
         **kwargs: Any,
     ) -> Iterator[ls_schemas.Example]:
         r"""Retrieve the example rows of the specified dataset.
@@ -7049,6 +7051,12 @@ class Client:
                 the examples.
             include_attachments (bool, default=False): Whether to include the
                 attachments in the response.
+            select (Optional[Sequence[str]]): Fields to include in each example,
+                such as "id" or "outputs".
+            exclude_default_fields (bool, default=False): Return only the fields
+                in ``select``, plus ``id``. Other default fields (``created_at``,
+                ``modified_at``, ``inputs``, ``name``, ``dataset_id``) are absent
+                unless selected. Select ``dataset_id`` if you need ``Example.url``.
             **kwargs (Any): Additional keyword arguments are ignored.
 
         Yields:
@@ -7113,8 +7121,13 @@ class Client:
             params["dataset"] = dataset_id
         else:
             pass
+        select_fields = [select] if isinstance(select, str) else list(select or [])
         if include_attachments:
-            params["select"] = ["attachment_urls", "outputs", "metadata"]
+            select_fields += [f for f in ("attachment_urls", "outputs", "metadata") if f not in select_fields]
+        if select_fields:
+            params["select"] = select_fields
+        if exclude_default_fields:
+            params["exclude_default_fields"] = True
         for i, example in enumerate(self._get_paginated_list("/examples", params=params)):
             attachments = _convert_stored_attachments_to_attachments_dict(
                 example, attachments_key="attachment_urls", api_url=self.api_url

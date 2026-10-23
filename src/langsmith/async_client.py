@@ -1101,10 +1101,27 @@ class AsyncClient:
         *,
         dataset_id: Optional[ls_client.ID_TYPE] = None,
         dataset_name: Optional[str] = None,
+        select: Optional[Sequence[str]] = None,
+        exclude_default_fields: bool = False,
         **kwargs: Any,
     ) -> AsyncIterator[ls_schemas.Example]:
-        """List examples."""
+        """List examples.
+
+        Args:
+            dataset_id: The ID of the dataset to filter by.
+            dataset_name: The name of the dataset to filter by.
+            select: Fields to include in each example, such as "id" or "outputs".
+            exclude_default_fields: Return only the fields in ``select``, plus
+                ``id``. Other default fields (``created_at``, ``modified_at``,
+                ``inputs``, ``name``, ``dataset_id``) are absent unless selected.
+                Select ``dataset_id`` if you need ``Example.url``.
+            **kwargs: Additional query parameters.
+        """
         params = kwargs.copy()
+        if select:
+            params["select"] = [select] if isinstance(select, str) else list(select)
+        if exclude_default_fields:
+            params["exclude_default_fields"] = True
         if dataset_id:
             params["dataset"] = ls_client._as_uuid(dataset_id)
         elif dataset_name:

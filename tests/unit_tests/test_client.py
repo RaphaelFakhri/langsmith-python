@@ -824,6 +824,39 @@ def test_list_project_issues_uses_platform_issues_endpoint(api_url: str, expecte
     }
 
 
+# These check the query params the client sends, not what the server returns.
+@pytest.mark.parametrize(
+    ("kwargs", "expected_select", "expected_flag"),
+    [
+        ({"select": ["id"], "exclude_default_fields": True}, ["id"], True),
+        ({"select": "outputs"}, ["outputs"], None),
+        ({}, None, None),
+        ({"exclude_default_fields": False}, None, None),
+        (
+            {"select": ["id", "outputs"], "include_attachments": True},
+            ["id", "outputs", "attachment_urls", "metadata"],
+            None,
+        ),
+    ],
+)
+def test_list_examples_select_params(kwargs: dict, expected_select, expected_flag) -> None:
+    example_id = str(uuid.uuid4())
+    mock_session = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = [{"id": example_id}]
+    mock_session.request.return_value = mock_response
+
+    client = Client(api_url="http://localhost:1984", api_key="test", session=mock_session)
+    examples = list(client.list_examples(dataset_id=str(uuid.uuid4()), **kwargs))
+
+    assert [str(e.id) for e in examples] == [example_id]
+    (examples_call,) = [c for c in mock_session.request.call_args_list if c.args[1].endswith("/examples")]
+    params = examples_call.kwargs["params"]
+    assert params.get("select") == expected_select
+    assert params.get("exclude_default_fields") == expected_flag
+
+
 @mock.patch("langsmith.client.requests.Session")
 def test_upload_csv(mock_session_cls: mock.Mock) -> None:
     _clear_env_cache()
