@@ -417,6 +417,7 @@ class BoxesResource(SyncAPIResource):
         description: str | Omit = omit,
         docker_image: str | Omit = omit,
         fs_capacity_bytes: int | Omit = omit,
+        image_config: box_create_snapshot_params.ImageConfig | Omit = omit,
         include: List[Literal["all", "mounts", "proxy_config", "env_vars", "resources", "lifecycle", "labels"]]
         | Omit = omit,
         include_memory: bool | Omit = omit,
@@ -448,6 +449,12 @@ class BoxesResource(SyncAPIResource):
           docker_image: sandbox-local Docker image to export
 
           fs_capacity_bytes: required for Docker image export unless the sandbox has a capacity
+
+          image_config: ImageConfig sets the command and ports the snapshot records, as a Docker image's
+              ENTRYPOINT, CMD and EXPOSE do. By default a capture keeps those of the snapshot
+              the sandbox was created from; each field given here replaces that one, and an
+              empty list clears it. A function serving the snapshot runs this command and
+              listens on its one exposed port.
 
           include: Sandbox settings to carry into the snapshot. Sandboxes created from it start
               with each carried setting their create request leaves unset: "mounts" (the
@@ -492,6 +499,7 @@ class BoxesResource(SyncAPIResource):
                     "description": description,
                     "docker_image": docker_image,
                     "fs_capacity_bytes": fs_capacity_bytes,
+                    "image_config": image_config,
                     "include": include,
                     "include_memory": include_memory,
                     "labels": labels,
@@ -1247,6 +1255,7 @@ class AsyncBoxesResource(AsyncAPIResource):
         description: str | Omit = omit,
         docker_image: str | Omit = omit,
         fs_capacity_bytes: int | Omit = omit,
+        image_config: box_create_snapshot_params.ImageConfig | Omit = omit,
         include: List[Literal["all", "mounts", "proxy_config", "env_vars", "resources", "lifecycle", "labels"]]
         | Omit = omit,
         include_memory: bool | Omit = omit,
@@ -1278,6 +1287,12 @@ class AsyncBoxesResource(AsyncAPIResource):
           docker_image: sandbox-local Docker image to export
 
           fs_capacity_bytes: required for Docker image export unless the sandbox has a capacity
+
+          image_config: ImageConfig sets the command and ports the snapshot records, as a Docker image's
+              ENTRYPOINT, CMD and EXPOSE do. By default a capture keeps those of the snapshot
+              the sandbox was created from; each field given here replaces that one, and an
+              empty list clears it. A function serving the snapshot runs this command and
+              listens on its one exposed port.
 
           include: Sandbox settings to carry into the snapshot. Sandboxes created from it start
               with each carried setting their create request leaves unset: "mounts" (the
@@ -1322,6 +1337,7 @@ class AsyncBoxesResource(AsyncAPIResource):
                     "description": description,
                     "docker_image": docker_image,
                     "fs_capacity_bytes": fs_capacity_bytes,
+                    "image_config": image_config,
                     "include": include,
                     "include_memory": include_memory,
                     "labels": labels,
