@@ -108,6 +108,7 @@ class TestBoxes:
                 ],
             },
             name="name",
+            persistent=True,
             preserve_memory_on_stop=True,
             proxy_config={
                 "access_control": {
@@ -986,6 +987,7 @@ class TestAsyncBoxes:
                 ],
             },
             name="name",
+            persistent=True,
             preserve_memory_on_stop=True,
             proxy_config={
                 "access_control": {

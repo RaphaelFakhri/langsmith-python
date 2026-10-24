@@ -73,6 +73,7 @@ class BoxesResource(SyncAPIResource):
         mem_bytes: int | Omit = omit,
         mount_config: SandboxMountConfigParam | Omit = omit,
         name: str | Omit = omit,
+        persistent: bool | Omit = omit,
         preserve_memory_on_stop: bool | Omit = omit,
         proxy_config: ProxyConfigParam | Omit = omit,
         restore_memory: bool | Omit = omit,
@@ -112,6 +113,15 @@ class BoxesResource(SyncAPIResource):
               it and it follows that ratio; set it and it must stay within 50% of the ratio
               for the requested CPU, so a 1 vCPU sandbox accepts 2-6 GiB. Setting memory
               without CPU derives the CPU from the same ratio. Maximum 64 GiB.
+
+          persistent: Persistent (private beta) keeps the sandbox's filesystem across stops (the
+              default, true). Set it to false for a disposable sandbox: its writes are
+              discarded whenever it stops, the next start boots it fresh from its snapshot,
+              and it is never charged for storage. A sandbox that is not persistent cannot
+              preserve memory on stop or have its filesystem captured as a snapshot (exporting
+              a Docker image from it with docker_image still works), and some snapshots
+              captured from other sandboxes cannot start one; such a create is rejected.
+              Setting it to false requires the private beta to be enabled for your workspace.
 
           preserve_memory_on_stop: PreserveMemoryOnStop, when true, suspends the sandbox's memory on a voluntary
               stop (idle timeout or explicit stop) so the next start resumes from where it
@@ -164,6 +174,7 @@ class BoxesResource(SyncAPIResource):
                     "mem_bytes": mem_bytes,
                     "mount_config": mount_config,
                     "name": name,
+                    "persistent": persistent,
                     "preserve_memory_on_stop": preserve_memory_on_stop,
                     "proxy_config": proxy_config,
                     "restore_memory": restore_memory,
@@ -917,6 +928,7 @@ class AsyncBoxesResource(AsyncAPIResource):
         mem_bytes: int | Omit = omit,
         mount_config: SandboxMountConfigParam | Omit = omit,
         name: str | Omit = omit,
+        persistent: bool | Omit = omit,
         preserve_memory_on_stop: bool | Omit = omit,
         proxy_config: ProxyConfigParam | Omit = omit,
         restore_memory: bool | Omit = omit,
@@ -956,6 +968,15 @@ class AsyncBoxesResource(AsyncAPIResource):
               it and it follows that ratio; set it and it must stay within 50% of the ratio
               for the requested CPU, so a 1 vCPU sandbox accepts 2-6 GiB. Setting memory
               without CPU derives the CPU from the same ratio. Maximum 64 GiB.
+
+          persistent: Persistent (private beta) keeps the sandbox's filesystem across stops (the
+              default, true). Set it to false for a disposable sandbox: its writes are
+              discarded whenever it stops, the next start boots it fresh from its snapshot,
+              and it is never charged for storage. A sandbox that is not persistent cannot
+              preserve memory on stop or have its filesystem captured as a snapshot (exporting
+              a Docker image from it with docker_image still works), and some snapshots
+              captured from other sandboxes cannot start one; such a create is rejected.
+              Setting it to false requires the private beta to be enabled for your workspace.
 
           preserve_memory_on_stop: PreserveMemoryOnStop, when true, suspends the sandbox's memory on a voluntary
               stop (idle timeout or explicit stop) so the next start resumes from where it
@@ -1008,6 +1029,7 @@ class AsyncBoxesResource(AsyncAPIResource):
                     "mem_bytes": mem_bytes,
                     "mount_config": mount_config,
                     "name": name,
+                    "persistent": persistent,
                     "preserve_memory_on_stop": preserve_memory_on_stop,
                     "proxy_config": proxy_config,
                     "restore_memory": restore_memory,
