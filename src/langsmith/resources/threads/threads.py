@@ -304,10 +304,11 @@ class ThreadsResource(SyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> SyncItemsCursorPostPagination[Thread]:
-        """Query threads within a project (session), with cursor-based pagination.
+        """GET with body payload — no resources created.
 
-        Returns
-        threads matching the given time range and optional filters.
+        Returns the threads in a tracing
+        project matching the query passed as the request payload. Results are filtered
+        by the given time range and optional filters, with cursor-based pagination.
 
         When `ai_search` is set, `Accept: text/event-stream` is required; requests
         without it return 406. AI search is unavailable on deployments that route
@@ -742,10 +743,11 @@ class AsyncThreadsResource(AsyncAPIResource):
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
     ) -> AsyncPaginator[Thread, AsyncItemsCursorPostPagination[Thread]]:
-        """Query threads within a project (session), with cursor-based pagination.
+        """GET with body payload — no resources created.
 
-        Returns
-        threads matching the given time range and optional filters.
+        Returns the threads in a tracing
+        project matching the query passed as the request payload. Results are filtered
+        by the given time range and optional filters, with cursor-based pagination.
 
         When `ai_search` is set, `Accept: text/event-stream` is required; requests
         without it return 406. AI search is unavailable on deployments that route
