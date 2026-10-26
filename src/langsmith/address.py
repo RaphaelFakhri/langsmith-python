@@ -1,15 +1,10 @@
 """Addresses that name features that hold traces in a tracing project.
 
-!!! warning "Beta"
-    Addressing runs to an agent is enabled per workspace. A workspace without
-    it rejects the runs, so tracing is lost rather than falling back to a
-    project. This API may change without notice.
-
 An `Address` names the tracing project of a feature: an `AgentAddress`'s
 environment, an `ExperimentAddress`, or the workspace's `EvaluatorAddress` traces.
 Query APIs resolve an address to its project (`client.sessions.resolve`). Only an
 `AgentAddress` can receive traces, so tracing entry points take an `AgentAddress`,
-and anything else is rejected.
+and anything else is rejected. Self-hosted deployments need LangSmith v0.18 or later.
 The environment of an agent is one of `LOCAL`, `DEVELOPMENT`, `STAGING` or
 `PRODUCTION`. Factories accept any case.
 
@@ -56,7 +51,7 @@ _UUID_PATTERN = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-
 
 
 class AgentAddress(TypedDict):
-    """(beta) An agent address. Use `agent_address` to validate and construct one.
+    """An agent address. Use `agent_address` to validate and construct one.
 
     The id is a DNS label of 1 to 63 lowercase ASCII letters, digits or hyphens,
     starting with a letter and ending with a letter or digit. The environment is
@@ -69,14 +64,14 @@ class AgentAddress(TypedDict):
 
 
 class ExperimentAddress(TypedDict):
-    """(beta) An experiment address. Use `experiment_address` to construct one."""
+    """An experiment address. Use `experiment_address` to construct one."""
 
     kind: Literal["EXPERIMENT"]
     id: str
 
 
 class EvaluatorAddress(TypedDict):
-    """(beta) The address of the workspace's shared evaluators project."""
+    """The address of the workspace's shared evaluators project."""
 
     kind: Literal["EVALUATOR"]
 
@@ -86,7 +81,7 @@ ApiAddress = Address
 
 
 class EnvAddressError(utils.LangSmithUserError):
-    """(beta) The `LANGSMITH_AGENT_*` / project env vars can't address a run.
+    """The `LANGSMITH_AGENT_*` / project env vars can't address a run.
 
     Raised for half an address, an invalid one, or an address beside a project.
     Tracing entry points (`@traceable`, `trace`, `tracing_context`,
@@ -98,7 +93,7 @@ class EnvAddressError(utils.LangSmithUserError):
 
 
 def agent_address(id: str, environment: str) -> AgentAddress:
-    """(beta) Construct an agent address with its kind and environment.
+    """Construct an agent address with its kind and environment.
 
     Args:
         id: A DNS label of 1 to 63 lowercase ASCII letters, digits or hyphens,
@@ -127,7 +122,7 @@ def agent_address(id: str, environment: str) -> AgentAddress:
 
 
 def experiment_address(id: str) -> ExperimentAddress:
-    """(beta) Construct an experiment address with its kind and lowercase UUID.
+    """Construct an experiment address with its kind and lowercase UUID.
 
     Raises:
         LangSmithUserError: If the id is not a canonical, hyphenated UUID.
@@ -140,7 +135,7 @@ def experiment_address(id: str) -> ExperimentAddress:
 
 
 def evaluator_address() -> EvaluatorAddress:
-    """(beta) Construct the address of the workspace's shared evaluators project."""
+    """Construct the address of the workspace's shared evaluators project."""
     return {"kind": "EVALUATOR"}
 
 

@@ -1622,7 +1622,7 @@ class Client:
 
     @property
     def sessions(self) -> AsyncSessionsResource:
-        """(beta) Access the sessions resource (resolve an address to its project)."""
+        """Access the sessions resource (resolve an address to its project)."""
         _check_backend_version(self.info.version, min_version="0.18.0")
         return self._get_langsmith_api().sessions
 
@@ -2475,13 +2475,10 @@ class Client:
                 embedding, prompt, or parser.
             project_name (Optional[str]): The project name of the run.
             revision_id (Optional[Union[UUID, str]]): The revision ID of the run.
-            address (Optional[AgentAddress]): (beta) An `AgentAddress`, such as
+            address (Optional[AgentAddress]): An `AgentAddress`, such as
                 `ls.agent_address(id, environment)`, to send the run to instead of a project.
                 Cannot be combined with `project_name` / `session_id` in the
                 same call. Defaults to the `LANGSMITH_AGENT_*` env vars.
-                This is in beta and enabled per workspace; a
-                workspace without it rejects the run, so the trace is lost
-                rather than falling back to a project.
             api_key (Optional[str]): The API key to use for this specific run.
             api_url (Optional[str]): The API URL to use for this specific run.
             service_key (Optional[str]): The service JWT key for service-to-service auth.
@@ -3667,12 +3664,6 @@ class Client:
             cookie (Optional[str]): The Cookie header value.
             **kwargs (Any): Ignored, except `address`.
 
-                !!! warning "Experimental"
-                    `address` is in beta. It sends the patch to an address,
-                    and must match the post it belongs to: an update that
-                    names none is resolved by run id, as every update was
-                    before. It may change without notice.
-
         Returns:
             None
 
@@ -4637,7 +4628,7 @@ class Client:
             run (RunBase): The run.
             project_name (Optional[str]): The name of the project.
             project_id (Optional[Union[UUID, str]]): The ID of the project.
-            address (Optional[Address]): (beta) An address that names the run's
+            address (Optional[Address]): An address that names the run's
                 project, such as the `AgentAddress` the run was sent to or an
                 `ExperimentAddress`, for a run that names no project. It is
                 resolved to its project with one request, which needs LangSmith
@@ -7897,12 +7888,9 @@ class Client:
             To enable feedback to be batch uploaded in the background you must
             specify `trace_id`. *We highly encourage this for latency-sensitive environments.*
 
-        !!! warning "Experimental"
-            `address` is in beta. It is enabled per workspace; a
-            workspace without it rejects the feedback, so it is lost rather
-            than falling back to a project. The address must already exist --
-            unlike run ingestion, a feedback part never creates one. It may
-            change without notice.
+        !!! note "Addressed feedback"
+            The `address` must already exist -- unlike run ingestion, a feedback
+            part never creates one.
 
         Args:
             key (str):

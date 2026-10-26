@@ -1,10 +1,5 @@
 """Resolving whether a run is addressed by project or by address.
 
-!!! warning "Beta"
-    Addressing runs to an address is enabled per workspace. A workspace
-    without it rejects the runs, so tracing is lost rather than falling back
-    to a project. This API may change without notice.
-
 A run goes to exactly one destination: a project (`project_name`) or an
 address (`langsmith.agent_address(id, environment)`), which
 names an agent and one of its environments. The server resolves an address to
@@ -38,7 +33,6 @@ from typing import Any, Optional
 
 from langsmith import address as _address
 from langsmith import utils
-from langsmith._internal._beta_decorator import _warn_once
 from langsmith.address import AgentAddress, EnvAddressError
 
 _LOGGER = logging.getLogger(__name__)
@@ -94,19 +88,6 @@ def address_from_lrn(value: Any) -> AgentAddress:
     if match is None:
         raise utils.LangSmithUserError("Not an agent address.")
     return _address.agent_address(*match.groups())
-
-
-def warn_is_beta() -> None:
-    """Warn the first time a run is actually addressed to an address.
-
-    `_warn_once` caches on the message, so this fires once per process.
-    """
-    _warn_once(
-        "Addressing runs with `langsmith.address` is in beta and is enabled per "
-        "workspace. A workspace without it rejects the run, so the trace is "
-        "lost rather than falling back to a project. The behavior may change "
-        "without notice."
-    )
 
 
 Tier = tuple[Optional[str], Optional[AgentAddress]]
@@ -242,7 +223,6 @@ def apply_to_payload(payload: dict, *, update: bool = False) -> None:
         address = _address.address_from_env()
     if address is None:
         return
-    warn_is_beta()
     payload["address"] = address_to_lrn(address)
     if not named_project:
         payload.pop("session_name", None)
