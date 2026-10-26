@@ -278,8 +278,8 @@ class Fix(BaseModel):
 
     provider_web_base_url: Optional[str] = None
     """
-    ProviderWebBaseURL is the GitLab instance a GitLab fix lives on; null for
-    GitHub.
+    ProviderWebBaseURL is the instance the fix was opened on; null on GitHub fixes
+    from before it was recorded.
     """
 
     repo_url: str
