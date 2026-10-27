@@ -44,6 +44,9 @@ class Agent(BaseModel):
 
     source_type: Literal["LSD", "MDA", "EXTERNAL", "FLEET"]
 
+    avatar_url: Optional[str] = None
+    """AvatarURL is a short-lived URL for the agent avatar, when present."""
+
     owner: Optional[str] = None
     """Owner is the owner's full name, falling back to email when available."""
 
