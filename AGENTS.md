@@ -28,7 +28,7 @@ Prefer CI over local runs when in doubt: shell or direnv `LANGSMITH_*` variables
 
 ## Generated files
 
-Files whose first line carries `File generated from our OpenAPI spec by Stainless.` are regenerated in langchainplus. Do not edit them by hand. Change the OpenAPI spec or `stainless.yml`, then run `./langdev sdks gen python` from the langchainplus root and commit `sdks/python` with `smith-sdks/stainless/patches/python.files` and `python.patch`.
+Files whose first line carries `File generated from our OpenAPI spec by Stainless.` are regenerated in langchainplus. Do not edit them by hand. Change the OpenAPI spec or `stainless.yml`, then run `./langdev sdks gen python` from the langchainplus root and commit `sdks/python` with `sdks/tooling/stainless/patches/python.files` and `python.patch`.
 
 Hand-written files are everything not listed in `python.files`. `langdev sdks gen python` keeps edits to generated files in `python.patch`.
 
