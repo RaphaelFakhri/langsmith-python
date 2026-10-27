@@ -126,6 +126,7 @@ class RunsResource(SyncAPIResource):
         filter: str | Omit = omit,
         has_error: bool | Omit = omit,
         ids: SequenceNotStr[str] | Omit = omit,
+        include_subtree_usage: bool | Omit = omit,
         is_root: bool | Omit = omit,
         max_feedback_modified_at: Union[str, datetime] | Omit = omit,
         max_start_time: Union[str, datetime] | Omit = omit,
@@ -178,6 +179,12 @@ class RunsResource(SyncAPIResource):
               (false).
 
           ids: `ids` optionally limits the request to these run UUIDs.
+
+          include_subtree_usage: `include_subtree_usage` enriches selected token and cost fields on root and
+              intermediate runs with subtree totals, and selected `first_token_time` with the
+              earliest observed subtree timestamp. Descendants contribute regardless of this
+              request's filters or time bounds. Runs without observed descendants retain their
+              original values. Defaults to false.
 
           is_root: `is_root` returns only root runs (true) or only non-root runs (false).
 
@@ -256,6 +263,7 @@ class RunsResource(SyncAPIResource):
                     "filter": filter,
                     "has_error": has_error,
                     "ids": ids,
+                    "include_subtree_usage": include_subtree_usage,
                     "is_root": is_root,
                     "max_feedback_modified_at": max_feedback_modified_at,
                     "max_start_time": max_start_time,
@@ -487,6 +495,7 @@ class AsyncRunsResource(AsyncAPIResource):
         filter: str | Omit = omit,
         has_error: bool | Omit = omit,
         ids: SequenceNotStr[str] | Omit = omit,
+        include_subtree_usage: bool | Omit = omit,
         is_root: bool | Omit = omit,
         max_feedback_modified_at: Union[str, datetime] | Omit = omit,
         max_start_time: Union[str, datetime] | Omit = omit,
@@ -539,6 +548,12 @@ class AsyncRunsResource(AsyncAPIResource):
               (false).
 
           ids: `ids` optionally limits the request to these run UUIDs.
+
+          include_subtree_usage: `include_subtree_usage` enriches selected token and cost fields on root and
+              intermediate runs with subtree totals, and selected `first_token_time` with the
+              earliest observed subtree timestamp. Descendants contribute regardless of this
+              request's filters or time bounds. Runs without observed descendants retain their
+              original values. Defaults to false.
 
           is_root: `is_root` returns only root runs (true) or only non-root runs (false).
 
@@ -617,6 +632,7 @@ class AsyncRunsResource(AsyncAPIResource):
                     "filter": filter,
                     "has_error": has_error,
                     "ids": ids,
+                    "include_subtree_usage": include_subtree_usage,
                     "is_root": is_root,
                     "max_feedback_modified_at": max_feedback_modified_at,
                     "max_start_time": max_start_time,
