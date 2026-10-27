@@ -1,3 +1,9 @@
+# Shared Types
+
+```python
+from langsmith.types import QueryPatchEvent, QueryPatchOperation
+```
+
 # ProductFeedback
 
 Types:
@@ -121,6 +127,18 @@ Methods:
 - <code title="post /api/v2/runs/query">client.runs.<a href="./src/langsmith/resources/runs/runs.py">query_v2</a>(\*\*<a href="src/langsmith/types/run_query_v2_params.py">params</a>) -> <a href="./src/langsmith/types/run.py">SyncItemsCursorPostPagination[Run]</a></code>
 - <code title="get /api/v2/runs/{run_id}">client.runs.<a href="./src/langsmith/resources/runs/runs.py">retrieve_v2</a>(run_id, \*\*<a href="src/langsmith/types/run_retrieve_v2_params.py">params</a>) -> <a href="./src/langsmith/types/run.py">Run</a></code>
 
+## Streaming
+
+Types:
+
+```python
+from langsmith.types.runs import StreamingQueryV2Response
+```
+
+Methods:
+
+- <code title="post /api/v2/runs/query">client.runs.streaming.<a href="./src/langsmith/resources/runs/streaming.py">query_v2</a>(\*\*<a href="src/langsmith/types/runs/streaming_query_v2_params.py">params</a>) -> <a href="./src/langsmith/types/runs/streaming_query_v2_response.py">StreamingQueryV2Response</a></code>
+
 ## Share
 
 Types:
@@ -149,6 +167,18 @@ Methods:
 - <code title="post /api/v2/threads/query">client.threads.<a href="./src/langsmith/resources/threads/threads.py">query</a>(\*\*<a href="src/langsmith/types/thread_query_params.py">params</a>) -> <a href="./src/langsmith/types/thread.py">SyncItemsCursorPostPagination[Thread]</a></code>
 - <code title="get /api/v2/threads/{thread_id}/stats">client.threads.<a href="./src/langsmith/resources/threads/threads.py">stats</a>(thread_id, \*\*<a href="src/langsmith/types/thread_stats_params.py">params</a>) -> <a href="./src/langsmith/types/thread_stats.py">ThreadStats</a></code>
 
+## Streaming
+
+Types:
+
+```python
+from langsmith.types.threads import StreamingQueryResponse
+```
+
+Methods:
+
+- <code title="post /api/v2/threads/query">client.threads.streaming.<a href="./src/langsmith/resources/threads/streaming.py">query</a>(\*\*<a href="src/langsmith/types/threads/streaming_query_params.py">params</a>) -> <a href="./src/langsmith/types/threads/streaming_query_response.py">StreamingQueryResponse</a></code>
+
 ## Share
 
 Types:
@@ -173,8 +203,20 @@ from langsmith.types import Trace, TraceAggregates, TraceListRunsResponse
 
 Methods:
 
-- <code title="get /api/v2/traces/{trace_id}/runs">client.traces.<a href="./src/langsmith/resources/traces.py">list_runs</a>(trace_id, \*\*<a href="src/langsmith/types/trace_list_runs_params.py">params</a>) -> <a href="./src/langsmith/types/trace_list_runs_response.py">TraceListRunsResponse</a></code>
-- <code title="post /api/v2/traces/query">client.traces.<a href="./src/langsmith/resources/traces.py">query</a>(\*\*<a href="src/langsmith/types/trace_query_params.py">params</a>) -> <a href="./src/langsmith/types/trace.py">SyncItemsCursorPostPagination[Trace]</a></code>
+- <code title="get /api/v2/traces/{trace_id}/runs">client.traces.<a href="./src/langsmith/resources/traces/traces.py">list_runs</a>(trace_id, \*\*<a href="src/langsmith/types/trace_list_runs_params.py">params</a>) -> <a href="./src/langsmith/types/trace_list_runs_response.py">TraceListRunsResponse</a></code>
+- <code title="post /api/v2/traces/query">client.traces.<a href="./src/langsmith/resources/traces/traces.py">query</a>(\*\*<a href="src/langsmith/types/trace_query_params.py">params</a>) -> <a href="./src/langsmith/types/trace.py">SyncItemsCursorPostPagination[Trace]</a></code>
+
+## Streaming
+
+Types:
+
+```python
+from langsmith.types.traces import StreamingQueryResponse
+```
+
+Methods:
+
+- <code title="post /api/v2/traces/query">client.traces.streaming.<a href="./src/langsmith/resources/traces/streaming.py">query</a>(\*\*<a href="src/langsmith/types/traces/streaming_query_params.py">params</a>) -> <a href="./src/langsmith/types/traces/streaming_query_response.py">StreamingQueryResponse</a></code>
 
 # OnlineEvaluators
 

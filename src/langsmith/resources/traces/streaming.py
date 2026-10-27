@@ -2,175 +2,52 @@
 
 from __future__ import annotations
 
-from typing import List, Union
+from typing import Any, Dict, List, Union, Iterator
 from datetime import datetime
-from typing_extensions import Literal
+from typing_extensions import AsyncIterator
 
-from ..types import trace_query_params, trace_list_runs_params
-from .._httpx import httpx
-from .._types import Body, Omit, Query, Headers, NotGiven, SequenceNotStr, omit, not_given
-from .._utils import path_template, maybe_transform, strip_not_given, async_maybe_transform
-from .._compat import cached_property
-from .._resource import SyncAPIResource, AsyncAPIResource
-from .._response import (
+from ..._httpx import httpx
+from ..._types import Body, Omit, Query, Headers, NotGiven, SequenceNotStr, omit, not_given
+from ..._utils import is_given, maybe_transform, async_maybe_transform
+from ..._compat import cached_property
+from ..._resource import SyncAPIResource, AsyncAPIResource
+from ..._response import (
     to_raw_response_wrapper,
     to_streamed_response_wrapper,
     async_to_raw_response_wrapper,
     async_to_streamed_response_wrapper,
 )
-from ..pagination import SyncItemsCursorPostPagination, AsyncItemsCursorPostPagination
-from ..types.trace import Trace
-from .._base_client import AsyncPaginator, make_request_options
-from ..types.run_select_field import RunSelectField
-from ..types.trace_list_runs_response import TraceListRunsResponse
+from ..._streaming import Stream, AsyncStream
+from ...types.trace import Trace
+from ..._base_client import make_request_options
+from ...types.traces import streaming_query_params
+from ..._query_streaming import iter_query_stream, aiter_query_stream
+from ...types.run_select_field import RunSelectField
+from ...types.shared.query_patch_event import QueryPatchEvent
+from ...types.traces.streaming_query_response import StreamingQueryResponse
 
-__all__ = ["TracesResource", "AsyncTracesResource"]
+__all__ = ["StreamingResource", "AsyncStreamingResource"]
 
 
-class TracesResource(SyncAPIResource):
+class StreamingResource(SyncAPIResource):
     @cached_property
-    def with_raw_response(self) -> TracesResourceWithRawResponse:
+    def with_raw_response(self) -> StreamingResourceWithRawResponse:
         """
         This property can be used as a prefix for any HTTP method call to return
         the raw response object instead of the parsed content.
 
         For more information, see https://www.github.com/langchain-ai/langsmith-python#accessing-raw-response-data-eg-headers
         """
-        return TracesResourceWithRawResponse(self)
+        return StreamingResourceWithRawResponse(self)
 
     @cached_property
-    def with_streaming_response(self) -> TracesResourceWithStreamingResponse:
+    def with_streaming_response(self) -> StreamingResourceWithStreamingResponse:
         """
         An alternative to `.with_raw_response` that doesn't eagerly read the response body.
 
         For more information, see https://www.github.com/langchain-ai/langsmith-python#with_streaming_response
         """
-        return TracesResourceWithStreamingResponse(self)
-
-    def list_runs(
-        self,
-        trace_id: str,
-        *,
-        project_id: str,
-        filter: str | Omit = omit,
-        max_start_time: Union[str, datetime] | Omit = omit,
-        min_start_time: Union[str, datetime] | Omit = omit,
-        selects: List[
-            Literal[
-                "ID",
-                "NAME",
-                "RUN_TYPE",
-                "STATUS",
-                "START_TIME",
-                "END_TIME",
-                "LATENCY_SECONDS",
-                "FIRST_TOKEN_TIME",
-                "ERROR",
-                "ERROR_PREVIEW",
-                "EXTRA",
-                "METADATA",
-                "EVENTS",
-                "INPUTS",
-                "INPUTS_PREVIEW",
-                "OUTPUTS",
-                "OUTPUTS_PREVIEW",
-                "MANIFEST",
-                "PARENT_RUN_IDS",
-                "PROJECT_ID",
-                "TRACE_ID",
-                "THREAD_ID",
-                "DOTTED_ORDER",
-                "IS_ROOT",
-                "REFERENCE_EXAMPLE_ID",
-                "REFERENCE_DATASET_ID",
-                "TOTAL_TOKENS",
-                "PROMPT_TOKENS",
-                "COMPLETION_TOKENS",
-                "TOTAL_COST",
-                "PROMPT_COST",
-                "COMPLETION_COST",
-                "PROMPT_TOKEN_DETAILS",
-                "COMPLETION_TOKEN_DETAILS",
-                "PROMPT_COST_DETAILS",
-                "COMPLETION_COST_DETAILS",
-                "PRICE_MODEL_ID",
-                "TAGS",
-                "APP_PATH",
-                "ATTACHMENTS",
-                "THREAD_EVALUATION_TIME",
-                "IS_IN_DATASET",
-                "LAST_QUEUED_AT",
-                "SHARE_URL",
-                "FEEDBACK_STATS",
-                "LS_USER_ID",
-            ]
-        ]
-        | Omit = omit,
-        accept: str | Omit = omit,
-        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
-        # The extra values given here take precedence over values defined on the client or passed to this method.
-        extra_headers: Headers | None = None,
-        extra_query: Query | None = None,
-        extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = not_given,
-    ) -> TraceListRunsResponse:
-        """Returns runs for a trace ID within min/max start time.
-
-        Optional `filter`;
-        repeatable `selects` to select fields to return.
-
-        Self-hosted deployments require LangSmith `v0.16` or later.
-
-        Args:
-          project_id: `project_id` is the UUID of the tracing project that owns the trace.
-
-          filter: `filter` narrows which runs within this trace are returned, using a LangSmith
-              filter expression evaluated against each run. For example: `eq(run_type, "llm")`
-              for LLM runs only, or `eq(status, "error")` for failed runs. See
-              https://docs.langchain.com/langsmith/trace-query-syntax#filter-query-language
-              for syntax.
-
-          max_start_time: `max_start_time` is the optional inclusive upper bound for run `start_time`
-              (RFC3339 date-time). Required together with `min_start_time`.
-
-          min_start_time: `min_start_time` is the optional inclusive lower bound for run `start_time`
-              (RFC3339 date-time). Required together with `max_start_time`.
-
-          selects: `selects` lists which properties to include on each returned run (repeatable
-              query parameter). Accepts any value of the `RunSelectField` enum. If omitted,
-              only `id` is returned.
-
-          extra_headers: Send extra headers
-
-          extra_query: Add additional query parameters to the request
-
-          extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
-        """
-        if not trace_id:
-            raise ValueError(f"Expected a non-empty value for `trace_id` but received {trace_id!r}")
-        extra_headers = {**strip_not_given({"Accept": accept}), **(extra_headers or {})}
-        return self._get(
-            path_template("/api/v2/traces/{trace_id}/runs", trace_id=trace_id),
-            options=make_request_options(
-                extra_headers=extra_headers,
-                extra_query=extra_query,
-                extra_body=extra_body,
-                timeout=timeout,
-                query=maybe_transform(
-                    {
-                        "project_id": project_id,
-                        "filter": filter,
-                        "max_start_time": max_start_time,
-                        "min_start_time": min_start_time,
-                        "selects": selects,
-                    },
-                    trace_list_runs_params.TraceListRunsParams,
-                ),
-            ),
-            cast_to=TraceListRunsResponse,
-        )
+        return StreamingResourceWithStreamingResponse(self)
 
     def query(
         self,
@@ -194,7 +71,7 @@ class TracesResource(SyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
-    ) -> SyncItemsCursorPostPagination[Trace]:
+    ) -> Stream[QueryPatchEvent]:
         """
         Returns a paginated list of traces (root runs) for a single tracing project.
         Each item carries the trace's root run plus optional trace-wide aggregates
@@ -272,10 +149,13 @@ class TracesResource(SyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        extra_headers = {**strip_not_given({"Accept": accept}), **(extra_headers or {})}
-        return self._get_api_list(
+        extra_headers = {
+            **{key: value for key, value in {"Accept": accept}.items() if is_given(value)},
+            **(extra_headers or {}),
+        }
+        extra_headers = {"Accept": "text/event-stream", **(extra_headers or {})}
+        return self._post(
             "/api/v2/traces/query",
-            page=SyncItemsCursorPostPagination[Trace],
             body=maybe_transform(
                 {
                     "ai_search": ai_search,
@@ -291,162 +171,17 @@ class TracesResource(SyncAPIResource):
                     "trace_ids": trace_ids,
                     "tree_filter": tree_filter,
                 },
-                trace_query_params.TraceQueryParams,
+                streaming_query_params.StreamingQueryParams,
             ),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
-            model=Trace,
-            method="post",
+            cast_to=StreamingQueryResponse,
+            stream=True,
+            stream_cls=Stream[QueryPatchEvent],
         )
 
-
-class AsyncTracesResource(AsyncAPIResource):
-    @cached_property
-    def with_raw_response(self) -> AsyncTracesResourceWithRawResponse:
-        """
-        This property can be used as a prefix for any HTTP method call to return
-        the raw response object instead of the parsed content.
-
-        For more information, see https://www.github.com/langchain-ai/langsmith-python#accessing-raw-response-data-eg-headers
-        """
-        return AsyncTracesResourceWithRawResponse(self)
-
-    @cached_property
-    def with_streaming_response(self) -> AsyncTracesResourceWithStreamingResponse:
-        """
-        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
-
-        For more information, see https://www.github.com/langchain-ai/langsmith-python#with_streaming_response
-        """
-        return AsyncTracesResourceWithStreamingResponse(self)
-
-    async def list_runs(
-        self,
-        trace_id: str,
-        *,
-        project_id: str,
-        filter: str | Omit = omit,
-        max_start_time: Union[str, datetime] | Omit = omit,
-        min_start_time: Union[str, datetime] | Omit = omit,
-        selects: List[
-            Literal[
-                "ID",
-                "NAME",
-                "RUN_TYPE",
-                "STATUS",
-                "START_TIME",
-                "END_TIME",
-                "LATENCY_SECONDS",
-                "FIRST_TOKEN_TIME",
-                "ERROR",
-                "ERROR_PREVIEW",
-                "EXTRA",
-                "METADATA",
-                "EVENTS",
-                "INPUTS",
-                "INPUTS_PREVIEW",
-                "OUTPUTS",
-                "OUTPUTS_PREVIEW",
-                "MANIFEST",
-                "PARENT_RUN_IDS",
-                "PROJECT_ID",
-                "TRACE_ID",
-                "THREAD_ID",
-                "DOTTED_ORDER",
-                "IS_ROOT",
-                "REFERENCE_EXAMPLE_ID",
-                "REFERENCE_DATASET_ID",
-                "TOTAL_TOKENS",
-                "PROMPT_TOKENS",
-                "COMPLETION_TOKENS",
-                "TOTAL_COST",
-                "PROMPT_COST",
-                "COMPLETION_COST",
-                "PROMPT_TOKEN_DETAILS",
-                "COMPLETION_TOKEN_DETAILS",
-                "PROMPT_COST_DETAILS",
-                "COMPLETION_COST_DETAILS",
-                "PRICE_MODEL_ID",
-                "TAGS",
-                "APP_PATH",
-                "ATTACHMENTS",
-                "THREAD_EVALUATION_TIME",
-                "IS_IN_DATASET",
-                "LAST_QUEUED_AT",
-                "SHARE_URL",
-                "FEEDBACK_STATS",
-                "LS_USER_ID",
-            ]
-        ]
-        | Omit = omit,
-        accept: str | Omit = omit,
-        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
-        # The extra values given here take precedence over values defined on the client or passed to this method.
-        extra_headers: Headers | None = None,
-        extra_query: Query | None = None,
-        extra_body: Body | None = None,
-        timeout: float | httpx.Timeout | None | NotGiven = not_given,
-    ) -> TraceListRunsResponse:
-        """Returns runs for a trace ID within min/max start time.
-
-        Optional `filter`;
-        repeatable `selects` to select fields to return.
-
-        Self-hosted deployments require LangSmith `v0.16` or later.
-
-        Args:
-          project_id: `project_id` is the UUID of the tracing project that owns the trace.
-
-          filter: `filter` narrows which runs within this trace are returned, using a LangSmith
-              filter expression evaluated against each run. For example: `eq(run_type, "llm")`
-              for LLM runs only, or `eq(status, "error")` for failed runs. See
-              https://docs.langchain.com/langsmith/trace-query-syntax#filter-query-language
-              for syntax.
-
-          max_start_time: `max_start_time` is the optional inclusive upper bound for run `start_time`
-              (RFC3339 date-time). Required together with `min_start_time`.
-
-          min_start_time: `min_start_time` is the optional inclusive lower bound for run `start_time`
-              (RFC3339 date-time). Required together with `max_start_time`.
-
-          selects: `selects` lists which properties to include on each returned run (repeatable
-              query parameter). Accepts any value of the `RunSelectField` enum. If omitted,
-              only `id` is returned.
-
-          extra_headers: Send extra headers
-
-          extra_query: Add additional query parameters to the request
-
-          extra_body: Add additional JSON properties to the request
-
-          timeout: Override the client-level default timeout for this request, in seconds
-        """
-        if not trace_id:
-            raise ValueError(f"Expected a non-empty value for `trace_id` but received {trace_id!r}")
-        extra_headers = {**strip_not_given({"Accept": accept}), **(extra_headers or {})}
-        return await self._get(
-            path_template("/api/v2/traces/{trace_id}/runs", trace_id=trace_id),
-            options=make_request_options(
-                extra_headers=extra_headers,
-                extra_query=extra_query,
-                extra_body=extra_body,
-                timeout=timeout,
-                query=await async_maybe_transform(
-                    {
-                        "project_id": project_id,
-                        "filter": filter,
-                        "max_start_time": max_start_time,
-                        "min_start_time": min_start_time,
-                        "selects": selects,
-                    },
-                    trace_list_runs_params.TraceListRunsParams,
-                ),
-            ),
-            cast_to=TraceListRunsResponse,
-        )
-
-    def query(
+    def query_items(
         self,
         *,
         ai_search: str | Omit = omit,
@@ -468,7 +203,58 @@ class AsyncTracesResource(AsyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = not_given,
-    ) -> AsyncPaginator[Trace, AsyncItemsCursorPostPagination[Trace]]:
+    ) -> Iterator[Trace]:
+        """
+        Streams the items of `query` one at a time across pages, following `next_cursor`.
+        """
+        params: Dict[str, Any] = dict(locals())
+        del params["self"]
+        return iter_query_stream(Trace, self.query, params)
+
+
+class AsyncStreamingResource(AsyncAPIResource):
+    @cached_property
+    def with_raw_response(self) -> AsyncStreamingResourceWithRawResponse:
+        """
+        This property can be used as a prefix for any HTTP method call to return
+        the raw response object instead of the parsed content.
+
+        For more information, see https://www.github.com/langchain-ai/langsmith-python#accessing-raw-response-data-eg-headers
+        """
+        return AsyncStreamingResourceWithRawResponse(self)
+
+    @cached_property
+    def with_streaming_response(self) -> AsyncStreamingResourceWithStreamingResponse:
+        """
+        An alternative to `.with_raw_response` that doesn't eagerly read the response body.
+
+        For more information, see https://www.github.com/langchain-ai/langsmith-python#with_streaming_response
+        """
+        return AsyncStreamingResourceWithStreamingResponse(self)
+
+    async def query(
+        self,
+        *,
+        ai_search: str | Omit = omit,
+        cursor: str | Omit = omit,
+        max_feedback_modified_at: Union[str, datetime] | Omit = omit,
+        max_start_time: Union[str, datetime] | Omit = omit,
+        min_feedback_modified_at: Union[str, datetime] | Omit = omit,
+        min_start_time: Union[str, datetime] | Omit = omit,
+        page_size: int | Omit = omit,
+        project_id: str | Omit = omit,
+        selects: List[RunSelectField] | Omit = omit,
+        trace_filter: str | Omit = omit,
+        trace_ids: SequenceNotStr[str] | Omit = omit,
+        tree_filter: str | Omit = omit,
+        accept: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
+    ) -> AsyncStream[QueryPatchEvent]:
         """
         Returns a paginated list of traces (root runs) for a single tracing project.
         Each item carries the trace's root run plus optional trace-wide aggregates
@@ -546,11 +332,14 @@ class AsyncTracesResource(AsyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
-        extra_headers = {**strip_not_given({"Accept": accept}), **(extra_headers or {})}
-        return self._get_api_list(
+        extra_headers = {
+            **{key: value for key, value in {"Accept": accept}.items() if is_given(value)},
+            **(extra_headers or {}),
+        }
+        extra_headers = {"Accept": "text/event-stream", **(extra_headers or {})}
+        return await self._post(
             "/api/v2/traces/query",
-            page=AsyncItemsCursorPostPagination[Trace],
-            body=maybe_transform(
+            body=await async_maybe_transform(
                 {
                     "ai_search": ai_search,
                     "cursor": cursor,
@@ -565,59 +354,78 @@ class AsyncTracesResource(AsyncAPIResource):
                     "trace_ids": trace_ids,
                     "tree_filter": tree_filter,
                 },
-                trace_query_params.TraceQueryParams,
+                streaming_query_params.StreamingQueryParams,
             ),
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
-            model=Trace,
-            method="post",
+            cast_to=StreamingQueryResponse,
+            stream=True,
+            stream_cls=AsyncStream[QueryPatchEvent],
         )
 
+    def query_items(
+        self,
+        *,
+        ai_search: str | Omit = omit,
+        cursor: str | Omit = omit,
+        max_feedback_modified_at: Union[str, datetime] | Omit = omit,
+        max_start_time: Union[str, datetime] | Omit = omit,
+        min_feedback_modified_at: Union[str, datetime] | Omit = omit,
+        min_start_time: Union[str, datetime] | Omit = omit,
+        page_size: int | Omit = omit,
+        project_id: str | Omit = omit,
+        selects: List[RunSelectField] | Omit = omit,
+        trace_filter: str | Omit = omit,
+        trace_ids: SequenceNotStr[str] | Omit = omit,
+        tree_filter: str | Omit = omit,
+        accept: str | Omit = omit,
+        # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
+        # The extra values given here take precedence over values defined on the client or passed to this method.
+        extra_headers: Headers | None = None,
+        extra_query: Query | None = None,
+        extra_body: Body | None = None,
+        timeout: float | httpx.Timeout | None | NotGiven = not_given,
+    ) -> AsyncIterator[Trace]:
+        """
+        Streams the items of `query` one at a time across pages, following `next_cursor`.
+        """
+        params: Dict[str, Any] = dict(locals())
+        del params["self"]
+        return aiter_query_stream(Trace, self.query, params)
 
-class TracesResourceWithRawResponse:
-    def __init__(self, traces: TracesResource) -> None:
-        self._traces = traces
 
-        self.list_runs = to_raw_response_wrapper(
-            traces.list_runs,
-        )
+class StreamingResourceWithRawResponse:
+    def __init__(self, streaming: StreamingResource) -> None:
+        self._streaming = streaming
+
         self.query = to_raw_response_wrapper(
-            traces.query,
+            streaming.query,
         )
 
 
-class AsyncTracesResourceWithRawResponse:
-    def __init__(self, traces: AsyncTracesResource) -> None:
-        self._traces = traces
+class AsyncStreamingResourceWithRawResponse:
+    def __init__(self, streaming: AsyncStreamingResource) -> None:
+        self._streaming = streaming
 
-        self.list_runs = async_to_raw_response_wrapper(
-            traces.list_runs,
-        )
         self.query = async_to_raw_response_wrapper(
-            traces.query,
+            streaming.query,
         )
 
 
-class TracesResourceWithStreamingResponse:
-    def __init__(self, traces: TracesResource) -> None:
-        self._traces = traces
+class StreamingResourceWithStreamingResponse:
+    def __init__(self, streaming: StreamingResource) -> None:
+        self._streaming = streaming
 
-        self.list_runs = to_streamed_response_wrapper(
-            traces.list_runs,
-        )
         self.query = to_streamed_response_wrapper(
-            traces.query,
+            streaming.query,
         )
 
 
-class AsyncTracesResourceWithStreamingResponse:
-    def __init__(self, traces: AsyncTracesResource) -> None:
-        self._traces = traces
+class AsyncStreamingResourceWithStreamingResponse:
+    def __init__(self, streaming: AsyncStreamingResource) -> None:
+        self._streaming = streaming
 
-        self.list_runs = async_to_streamed_response_wrapper(
-            traces.list_runs,
-        )
         self.query = async_to_streamed_response_wrapper(
-            traces.query,
+            streaming.query,
         )

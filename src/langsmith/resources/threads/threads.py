@@ -19,6 +19,14 @@ from ..._httpx import httpx
 from ..._types import Body, Omit, Query, Headers, NotGiven, omit, not_given
 from ..._utils import path_template, maybe_transform, strip_not_given, async_maybe_transform
 from ..._compat import cached_property
+from .streaming import (
+    StreamingResource,
+    AsyncStreamingResource,
+    StreamingResourceWithRawResponse,
+    AsyncStreamingResourceWithRawResponse,
+    StreamingResourceWithStreamingResponse,
+    AsyncStreamingResourceWithStreamingResponse,
+)
 from ..._resource import SyncAPIResource, AsyncAPIResource
 from ..._response import (
     to_raw_response_wrapper,
@@ -42,6 +50,10 @@ __all__ = ["ThreadsResource", "AsyncThreadsResource"]
 
 
 class ThreadsResource(SyncAPIResource):
+    @cached_property
+    def streaming(self) -> StreamingResource:
+        return StreamingResource(self._client)
+
     @cached_property
     def share(self) -> ShareResource:
         return ShareResource(self._client)
@@ -481,6 +493,10 @@ class ThreadsResource(SyncAPIResource):
 
 
 class AsyncThreadsResource(AsyncAPIResource):
+    @cached_property
+    def streaming(self) -> AsyncStreamingResource:
+        return AsyncStreamingResource(self._client)
+
     @cached_property
     def share(self) -> AsyncShareResource:
         return AsyncShareResource(self._client)
@@ -937,6 +953,10 @@ class ThreadsResourceWithRawResponse:
         )
 
     @cached_property
+    def streaming(self) -> StreamingResourceWithRawResponse:
+        return StreamingResourceWithRawResponse(self._threads.streaming)
+
+    @cached_property
     def share(self) -> ShareResourceWithRawResponse:
         return ShareResourceWithRawResponse(self._threads.share)
 
@@ -957,6 +977,10 @@ class AsyncThreadsResourceWithRawResponse:
         self.stats = async_to_raw_response_wrapper(
             threads.stats,
         )
+
+    @cached_property
+    def streaming(self) -> AsyncStreamingResourceWithRawResponse:
+        return AsyncStreamingResourceWithRawResponse(self._threads.streaming)
 
     @cached_property
     def share(self) -> AsyncShareResourceWithRawResponse:
@@ -981,6 +1005,10 @@ class ThreadsResourceWithStreamingResponse:
         )
 
     @cached_property
+    def streaming(self) -> StreamingResourceWithStreamingResponse:
+        return StreamingResourceWithStreamingResponse(self._threads.streaming)
+
+    @cached_property
     def share(self) -> ShareResourceWithStreamingResponse:
         return ShareResourceWithStreamingResponse(self._threads.share)
 
@@ -1001,6 +1029,10 @@ class AsyncThreadsResourceWithStreamingResponse:
         self.stats = async_to_streamed_response_wrapper(
             threads.stats,
         )
+
+    @cached_property
+    def streaming(self) -> AsyncStreamingResourceWithStreamingResponse:
+        return AsyncStreamingResourceWithStreamingResponse(self._threads.streaming)
 
     @cached_property
     def share(self) -> AsyncShareResourceWithStreamingResponse:

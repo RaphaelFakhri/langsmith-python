@@ -19,6 +19,14 @@ from ..._httpx import httpx
 from ..._types import Body, Omit, Query, Headers, NotGiven, SequenceNotStr, omit, not_given
 from ..._utils import path_template, maybe_transform, strip_not_given, async_maybe_transform
 from ..._compat import cached_property
+from .streaming import (
+    StreamingResource,
+    AsyncStreamingResource,
+    StreamingResourceWithRawResponse,
+    AsyncStreamingResourceWithRawResponse,
+    StreamingResourceWithStreamingResponse,
+    AsyncStreamingResourceWithStreamingResponse,
+)
 from ..._resource import SyncAPIResource, AsyncAPIResource
 from ..._response import (
     to_raw_response_wrapper,
@@ -37,6 +45,10 @@ __all__ = ["RunsResource", "AsyncRunsResource"]
 
 
 class RunsResource(SyncAPIResource):
+    @cached_property
+    def streaming(self) -> StreamingResource:
+        return StreamingResource(self._client)
+
     @cached_property
     def share(self) -> ShareResource:
         return ShareResource(self._client)
@@ -406,6 +418,10 @@ class RunsResource(SyncAPIResource):
 
 
 class AsyncRunsResource(AsyncAPIResource):
+    @cached_property
+    def streaming(self) -> AsyncStreamingResource:
+        return AsyncStreamingResource(self._client)
+
     @cached_property
     def share(self) -> AsyncShareResource:
         return AsyncShareResource(self._client)
@@ -795,6 +811,10 @@ class RunsResourceWithRawResponse:
         )
 
     @cached_property
+    def streaming(self) -> StreamingResourceWithRawResponse:
+        return StreamingResourceWithRawResponse(self._runs.streaming)
+
+    @cached_property
     def share(self) -> ShareResourceWithRawResponse:
         return ShareResourceWithRawResponse(self._runs.share)
 
@@ -818,6 +838,10 @@ class AsyncRunsResourceWithRawResponse:
         self.query = async_to_raw_response_wrapper(
             runs.query,
         )
+
+    @cached_property
+    def streaming(self) -> AsyncStreamingResourceWithRawResponse:
+        return AsyncStreamingResourceWithRawResponse(self._runs.streaming)
 
     @cached_property
     def share(self) -> AsyncShareResourceWithRawResponse:
@@ -845,6 +869,10 @@ class RunsResourceWithStreamingResponse:
         )
 
     @cached_property
+    def streaming(self) -> StreamingResourceWithStreamingResponse:
+        return StreamingResourceWithStreamingResponse(self._runs.streaming)
+
+    @cached_property
     def share(self) -> ShareResourceWithStreamingResponse:
         return ShareResourceWithStreamingResponse(self._runs.share)
 
@@ -868,6 +896,10 @@ class AsyncRunsResourceWithStreamingResponse:
         self.query = async_to_streamed_response_wrapper(
             runs.query,
         )
+
+    @cached_property
+    def streaming(self) -> AsyncStreamingResourceWithStreamingResponse:
+        return AsyncStreamingResourceWithStreamingResponse(self._runs.streaming)
 
     @cached_property
     def share(self) -> AsyncShareResourceWithStreamingResponse:
