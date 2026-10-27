@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.14.14](https://github.com/langchain-ai/langsmith-python/compare/v0.14.13...v0.14.14) (2026-10-27)
+
+
+### Features
+
+* include subtree usage in frontend runs queries ([5e8d827](https://github.com/langchain-ai/langsmith-python/commit/5e8d827def1ecacd55760d7c36f86752589feb8c))
+* **python:** accept address in agent and voice integrations ([6704dd3](https://github.com/langchain-ai/langsmith-python/commit/6704dd3e954195448c3c3f2a809d8cccd0e70648))
+* **python:** accept address in wrapper tracing_extra ([cea48fa](https://github.com/langchain-ai/langsmith-python/commit/cea48fa75f34c8229575bfcf5d0d5e82a4222532))
+* **sdks:** stream v2 run, trace and thread queries ([b5e557a](https://github.com/langchain-ai/langsmith-python/commit/b5e557a204cff0f68ed32818f9658c00b9d88d24))
+
 ## [0.14.13](https://github.com/langchain-ai/langsmith-python/compare/v0.14.12...v0.14.13) (2026-10-27)
 
 
