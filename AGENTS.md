@@ -4,9 +4,14 @@ The LangSmith Python SDK source is `sdks/python` in langchainplus: the hand-writ
 
 ## External contributor PRs
 
-Do not authorize GitHub Actions on external contributors' PRs.
-Follow [Taking over an external contributor's PR](CONTRIBUTING.md#taking-over-an-external-contributors-pr) when taking over one.
-Review before pushing, cherry-pick reviewed commits onto an internal branch, preserve contributor authorship, and open a replacement PR.
+Do not authorize GitHub Actions on external contributors' PRs. To take one over:
+
+1. Review the public PR's diff.
+2. From a langchainplus branch off `main`, apply it with its author kept:
+   `gh pr diff <number> --repo langchain-ai/langsmith-python --patch | git am -3 --directory=sdks/python`
+3. Open the langchainplus PR.
+4. Squash-merge it and keep the `Co-authored-by:` trailer GitHub adds for the contributor. The export keeps it, so the `langsmith-python` commit credits them.
+5. Close the public PR with a comment that links the exported change.
 
 ## Before opening a PR
 
